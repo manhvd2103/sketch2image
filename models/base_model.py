@@ -69,10 +69,7 @@ class BaseModel(ABC):
         '''
         if self.isTrain:
             self.schedulers = [networks.get_schedulers(optimizer, opt) for optimizer in self.optimizers]
-        if not self.isTrain or opt.continue_train:
-            load_suffix = 'iter_%d' % opt.load_iter if opt.load_iter > 0 else opt.epoch
-            self.load_networks(load_suffix)
-        self.print_networks(opt.verbose)
+        self.print_networks()
     
     def eval(self):
         '''Make models eval mode during test time'''
@@ -149,34 +146,8 @@ class BaseModel(ABC):
         else:
             self._path_instance_norm_state_dict(state_dict, getattr(module, key), keys, i + 1)
     
-    def load_networks(self, epoch):
-        '''Load all the networks from disk
-        
-        Parameters:
-            epoch (int): current epoch
-        '''
-        for name in self.model_names:
-            if isinstance(name, str):
-                load_filename = '%s_net_%s.pth' % (epoch, name)
-                load_path = os.path.join(self.save_dir, load_filename)
-                net = getattr(self, 'net' + name)
-                if isinstance(net, torch.nn.DataParallel):
-                    net = net.module
-                print('Loading the model from %s' % load_path)
-                state_dict = torch.load(load_path, map_location=str(self.device))
-                if hasattr(state_dict, '_metadata'):
-                    del state_dict._metadata
-                
-                for key in list(state_dict.keys()):
-                    self._path_instance_norm_state_dict(state_dict, net, key.split('.'))
-                net.load_state_dict(state_dict)
-    
-    def print_networks(self, verbose):
-        '''Print the total number of parameters in the network and network architecture
-        
-        Parameters:
-            verbose (bool): if verbose: print the network architecture
-        '''
+    def print_networks(self):
+        '''Print the total number of parameters in the network and network architecture'''
         print('------------ Networks initialized ------------')
         for name in self.model_names:
             if isinstance(name, str):
@@ -184,8 +155,6 @@ class BaseModel(ABC):
                 num_params = 0
                 for param in net.parameters():
                     num_params += param.numel()
-                if verbose:
-                    print(net)
                 print('[Network %s] Total number of parameters: %.3f M' % (name, num_params / 1e6))
         print('----------------------------------------------')
 

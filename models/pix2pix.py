@@ -19,10 +19,6 @@ class Pix2PixModel(BaseModel):
         BaseModel.__init__(self, opt)
         self.loss_names = ['G_GAN', 'G_L1', 'D_real', 'D_fake']
         self.visual_names = ['realA', 'fakeB', 'realB']
-        if self.isTrain:
-            self.model_names = ['G', 'D']
-        else:
-            self.model_names = ['G']
         self.netG = networks.define_G(opt.input_nc, opt.output_nc, opt.ngf, opt.netG, opt.norm, not opt.no_dropout, opt.init_type, opt.init_gain, opt.gpu_ids)
 
         if self.isTrain:
