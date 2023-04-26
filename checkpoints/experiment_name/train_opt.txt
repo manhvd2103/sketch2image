@@ -1,0 +1,32 @@
+------------------ Options ------------------
+               batch_size: 1                             
+                    beta1: 0.5                           
+          checkpoints_dir: ./checkpoints                 
+                crop_size: 256                           
+                 dataroot: data/city_512                 	[default: None]
+                direction: AtoB                          
+              epoch_count: 1                             
+                 gan_mode: lsgan                         
+                  gpu_ids: 0                             
+                init_gain: 0.02                          
+                init_type: normal                        
+                 input_nc: 3                             
+                load_size: 286                           
+                       lr: 0.0002                        
+           lr_decay_iters: 50                            
+                lr_policy: linear                        
+                    model: cycle_gan                     
+                 n_epochs: 100                           
+           n_epochs_decay: 100                           
+               n_layers_D: 3                             
+                     name: experiment_name               
+                      ndf: 64                            
+                     netD: basic                         
+                     netG: resunet                       	[default: resnet_9blocks]
+                      ngf: 64                            
+               no_dropout: False                         
+                     norm: instance                      
+              num_threads: 4                             
+                output_nc: 3                             
+                    phase: train                         
+------------------- End ---------------------
