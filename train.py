@@ -48,7 +48,6 @@ def main(opt):
     # Define loss
     criterionGAN = GANLoss(gan_mode=opt.gan_mode)
     criterionL1 = nn.L1Loss()
-    criterionMSE = nn.MSELoss()
 
     # Define optimizer
     optimizerG = optim.Adam(netG.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999))
@@ -62,8 +61,44 @@ def main(opt):
             real_A, real_B = data[0], data[1]
             fake_B = netG(real_A)
 
+            # Train the discriminator
             optimizerD.zero_grad()
-            
+
+            # Fake, stop backprop to the generator by detaching fake_B
+            fake_AB = torch.cat((real_A, fake_B), 1)
+            pred_fake = netD(fake_AB.detach())
+            loss_D_fake = criterionGAN(pred_fake, False)
+
+            # Real
+            real_AB = torch.cat((real_A, real_B), 1)
+            pred_real = netD(real_AB)
+            loss_D_real = criterionGAN(pred_real, True)
+
+            # Combine loss and calculate gradients
+            loss_D = (loss_D_fake + loss_D_real) * 0.5
+            loss_D.backward()
+
+            # Update weights
+            optimizerD.step()
+
+            # Train the generator
+            optimizerG.zero_grad()
+
+            # First, G(A) should fake the discriminator
+            fake_AB = torch.cat((real_A, fake_B), 1)
+            pred_fake = netD(fake_AB)
+            loss_G_GAN = criterionGAN(pred_fake, True)
+
+            # Second, G(A) = B
+            loss_G_L1 = criterionL1(fake_B, real_B) * opt.lambda_L1
+
+            # Combine loss and calculate gradients
+            loss_G = loss_G_GAN + loss_G_L1
+            loss_G.backward()
+
+            # Update weights
+            optimizerG.step()
+
 if __name__ == '__main__':
     opt = Options().parser()
     main(opt)
